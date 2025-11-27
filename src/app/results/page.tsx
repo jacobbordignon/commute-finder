@@ -1,21 +1,43 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LocationInput } from "@/components/search/LocationInput";
 import { FilterPanel } from "@/components/search/FilterPanel";
 import { TimeSelector } from "@/components/search/TimeSelector";
-import { MapView } from "@/components/map/MapView";
 import { ListingList } from "@/components/listings/ListingList";
 import { useSearchStore } from "@/store/searchStore";
 import { useListings } from "@/hooks/useListings";
+import dynamic from "next/dynamic";
+
+// Dynamically import MapView to avoid SSR issues with Google Maps
+const MapView = dynamic(
+  () => import("@/components/map/MapView").then((mod) => mod.MapView),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center bg-slate-100 rounded-xl">
+        <div className="flex items-center gap-2 text-slate-600">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Loading map...</span>
+        </div>
+      </div>
+    ),
+  }
+);
 
 export default function ResultsPage() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const { destinationLat, destinationLng, destinationAddress } = useSearchStore();
   const { fetchListings } = useListings();
+
+  // Ensure component is mounted before rendering (hydration fix)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch listings when destination changes
   useEffect(() => {
@@ -23,6 +45,15 @@ export default function ResultsPage() {
       fetchListings();
     }
   }, [destinationLat, destinationLng, fetchListings]);
+
+  // Show loading state until mounted
+  if (!mounted) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-slate-50">

@@ -16,7 +16,7 @@ const mapContainerStyle = {
   height: "100%",
 };
 
-const mapOptions: google.maps.MapOptions = {
+const mapOptions = {
   disableDefaultUI: true,
   zoomControl: false,
   mapTypeControl: false,
@@ -68,20 +68,25 @@ export function MapView() {
 
   // Fit bounds when listings change
   const bounds = useMemo(() => {
+    if (!isLoaded) return null;
     if (listings.length === 0 && !destinationLat) return null;
 
-    const b = new google.maps.LatLngBounds();
+    try {
+      const b = new google.maps.LatLngBounds();
 
-    if (destinationLat && destinationLng) {
-      b.extend({ lat: destinationLat, lng: destinationLng });
+      if (destinationLat && destinationLng) {
+        b.extend({ lat: destinationLat, lng: destinationLng });
+      }
+
+      listings.forEach((listing) => {
+        b.extend({ lat: listing.latitude, lng: listing.longitude });
+      });
+
+      return b;
+    } catch {
+      return null;
     }
-
-    listings.forEach((listing) => {
-      b.extend({ lat: listing.latitude, lng: listing.longitude });
-    });
-
-    return b;
-  }, [listings, destinationLat, destinationLng]);
+  }, [isLoaded, listings, destinationLat, destinationLng]);
 
   // Handle marker click
   const handleMarkerClick = useCallback(
