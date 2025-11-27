@@ -2,6 +2,9 @@ import { z } from "zod";
 
 const RENTCAST_BASE_URL = "https://api.rentcast.io/v1";
 
+// Maximum age for listings (30 days)
+const MAX_LISTING_AGE_DAYS = 30;
+
 // RentCast API response schema
 const RentCastListingSchema = z.object({
   id: z.string(),
@@ -12,7 +15,7 @@ const RentCastListingSchema = z.object({
   zipCode: z.string(),
   latitude: z.number(),
   longitude: z.number(),
-  price: z.number(),
+  price: z.number().nullable().optional(),
   bedrooms: z.number(),
   bathrooms: z.number(),
   squareFootage: z.number().nullable().optional(),
@@ -20,7 +23,6 @@ const RentCastListingSchema = z.object({
   listedDate: z.string().optional(),
   lastSeenDate: z.string().optional(),
   daysOnMarket: z.number().optional(),
-  photos: z.array(z.string()).optional(),
   listingUrl: z.string().optional(),
 });
 
@@ -98,7 +100,31 @@ export async function fetchRentCastListings(
     throw new Error("Invalid response from RentCast API");
   }
 
-  return parsed.data;
+  // Filter to only include listings with valid prices and recent dates
+  const validListings = parsed.data.filter((listing) => {
+    // Must have a valid price (not null, not 0, and reasonable range)
+    if (!listing.price || listing.price <= 0 || listing.price > 50000) {
+      return false;
+    }
+
+    // Check if listing is recent (within MAX_LISTING_AGE_DAYS)
+    const lastSeenDate = listing.lastSeenDate ? new Date(listing.lastSeenDate) : null;
+    const listedDate = listing.listedDate ? new Date(listing.listedDate) : null;
+    const mostRecentDate = lastSeenDate || listedDate;
+
+    if (mostRecentDate) {
+      const daysSinceUpdate = (Date.now() - mostRecentDate.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceUpdate > MAX_LISTING_AGE_DAYS) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  console.log(`RentCast: ${parsed.data.length} total, ${validListings.length} with valid prices`);
+
+  return validListings;
 }
 
 /**
@@ -113,13 +139,13 @@ export function transformRentCastListing(listing: RentCastListing) {
     zipCode: listing.zipCode,
     latitude: listing.latitude,
     longitude: listing.longitude,
-    price: listing.price,
+    price: listing.price!, // We've already filtered to ensure price exists
     bedrooms: listing.bedrooms,
     bathrooms: listing.bathrooms,
     sqft: listing.squareFootage || null,
     propertyType: normalizePropertyType(listing.propertyType),
-    imageUrl: listing.photos?.[0] || null,
-    listingUrl: listing.listingUrl || `https://www.rentcast.io/listing/${listing.id}`,
+    imageUrl: null, // RentCast API doesn't provide images
+    listingUrl: listing.listingUrl || `https://www.zillow.com/homes/${listing.formattedAddress.replace(/\s+/g, "-")}_rb/`,
   };
 }
 

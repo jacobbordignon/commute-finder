@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import { Bed, Bath, Square, Clock, ExternalLink, MapPin } from "lucide-react";
+import { Bed, Bath, Square, Clock, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,58 +35,32 @@ export function ListingCard({ listing }: ListingCardProps) {
       onMouseEnter={() => setHoveredListing(listing.id)}
       onMouseLeave={() => setHoveredListing(null)}
     >
-      <CardContent className="p-0">
-        {/* Image */}
-        <div className="relative aspect-[16/10] bg-slate-100 rounded-t-xl overflow-hidden">
-          {listing.imageUrl ? (
-            <Image
-              src={listing.imageUrl}
-              alt={listing.address}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 400px"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-              <MapPin className="h-12 w-12 text-slate-300" />
-            </div>
-          )}
-
-          {/* Value badge */}
-          {listing.valueScore !== null && (
-            <div className="absolute top-3 left-3">
-              <ValueBadge score={listing.valueScore} />
-            </div>
-          )}
-
-          {/* Price badge */}
-          <div className="absolute bottom-3 left-3">
-            <div className="bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-sm">
-              <span className="font-bold text-slate-900 text-lg">
+      <CardContent className="p-4">
+        {/* Header: Price + Commute + Value */}
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-bold text-slate-900 text-xl">
                 {formatCurrency(listing.price)}
               </span>
               <span className="text-slate-500 text-sm">/mo</span>
             </div>
-          </div>
-
-          {/* Commute badge */}
-          {listing.avgCommuteMin !== null && (
-            <div className="absolute bottom-3 right-3">
-              <div className="bg-emerald-600/95 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-sm flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-white" />
-                <span className="font-semibold text-white text-sm">
-                  {formatDuration(listing.avgCommuteMin)}
+            {listing.avgCommuteMin !== null && (
+              <div className="flex items-center gap-1.5 text-emerald-600">
+                <Clock className="h-4 w-4" />
+                <span className="font-medium text-sm">
+                  {formatDuration(listing.avgCommuteMin)} avg commute
                 </span>
               </div>
-            </div>
+            )}
+          </div>
+          {listing.valueScore !== null && (
+            <ValueBadge score={listing.valueScore} />
           )}
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div>
           {/* Property details */}
           <div className="flex items-center gap-3 text-slate-600 mb-3">
             <div className="flex items-center gap-1">
