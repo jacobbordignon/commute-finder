@@ -21,21 +21,22 @@ export function ListingMarker({
   onMouseOver,
   onMouseOut,
 }: ListingMarkerProps) {
-  // Determine marker color based on value score
+  // Determine marker color based on state and value score
   const getMarkerColor = () => {
-    if (isSelected) return "#059669"; // emerald-600
-    if (isHovered) return "#10b981"; // emerald-500
+    if (isSelected) return "#171717"; // neutral-900
+    if (isHovered) return "#404040"; // neutral-700
     
-    if (listing.valueScore === null) return "#94a3b8"; // slate-400
+    if (listing.valueScore === null) return "#a3a3a3"; // neutral-400
     
-    if (listing.valueScore < 50) return "#10b981"; // emerald-500 - excellent
-    if (listing.valueScore < 75) return "#3b82f6"; // blue-500 - good
-    if (listing.valueScore < 100) return "#f59e0b"; // amber-500 - fair
-    return "#ef4444"; // red-500 - poor
+    // Subtle value indication
+    if (listing.valueScore < 50) return "#525252"; // neutral-600 - excellent
+    if (listing.valueScore < 75) return "#737373"; // neutral-500 - good
+    if (listing.valueScore < 100) return "#a3a3a3"; // neutral-400 - fair
+    return "#d4d4d4"; // neutral-300 - poor
   };
 
   const markerColor = getMarkerColor();
-  const scale = isSelected || isHovered ? 1.2 : 1;
+  const scale = isSelected || isHovered ? 1.15 : 1;
 
   // Create a custom SVG marker
   const markerIcon = {
@@ -60,4 +61,3 @@ export function ListingMarker({
     />
   );
 }
-

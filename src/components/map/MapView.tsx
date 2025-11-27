@@ -16,25 +16,39 @@ const mapContainerStyle = {
   height: "100%",
 };
 
-const mapOptions = {
-  disableDefaultUI: true,
-  zoomControl: false,
-  mapTypeControl: false,
-  streetViewControl: false,
-  fullscreenControl: false,
-  styles: [
-    {
-      featureType: "poi",
-      elementType: "labels",
-      stylers: [{ visibility: "off" }],
-    },
-    {
-      featureType: "transit",
-      elementType: "labels",
-      stylers: [{ visibility: "off" }],
-    },
-  ],
-};
+// Subtle, minimal map style
+const defaultMapStyle = [
+  {
+    featureType: "poi",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
+  },
+  {
+    featureType: "transit",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
+  },
+  {
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#e0e7ef" }],
+  },
+  {
+    featureType: "landscape",
+    elementType: "geometry",
+    stylers: [{ color: "#f5f5f5" }],
+  },
+  {
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [{ color: "#ffffff" }],
+  },
+  {
+    featureType: "road",
+    elementType: "geometry.stroke",
+    stylers: [{ color: "#e5e5e5" }],
+  },
+];
 
 export function MapView() {
   const { isLoaded, loadError } = useJsApiLoader({
@@ -44,6 +58,7 @@ export function MapView() {
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [showInfoWindow, setShowInfoWindow] = useState<string | null>(null);
+  const [mapType, setMapType] = useState<"roadmap" | "satellite">("roadmap");
 
   const {
     listings,
@@ -57,6 +72,16 @@ export function MapView() {
   } = useSearchStore();
 
   const { center, zoom, setZoom } = useMapState();
+
+  const mapOptions = useMemo(() => ({
+    disableDefaultUI: true,
+    zoomControl: false,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+    mapTypeId: mapType,
+    styles: mapType === "roadmap" ? defaultMapStyle : undefined,
+  }), [mapType]);
 
   const onLoad = useCallback((map: google.maps.Map) => {
     setMap(map);
@@ -103,12 +128,17 @@ export function MapView() {
     return listings.find((l) => l.id === showInfoWindow);
   }, [listings, showInfoWindow]);
 
+  // Toggle map type
+  const toggleMapType = useCallback(() => {
+    setMapType((prev) => (prev === "roadmap" ? "satellite" : "roadmap"));
+  }, []);
+
   if (loadError) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-slate-100 rounded-xl">
+      <div className="w-full h-full flex items-center justify-center bg-neutral-100 rounded-lg">
         <div className="text-center p-6">
-          <p className="text-slate-600 font-medium">Failed to load Google Maps</p>
-          <p className="text-sm text-slate-500 mt-1">Please check your API key configuration</p>
+          <p className="text-neutral-600 font-medium">Failed to load map</p>
+          <p className="text-sm text-neutral-500 mt-1">Check your API key configuration</p>
         </div>
       </div>
     );
@@ -116,8 +146,8 @@ export function MapView() {
 
   if (!isLoaded) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-slate-100 rounded-xl">
-        <div className="flex items-center gap-2 text-slate-600">
+      <div className="w-full h-full flex items-center justify-center bg-neutral-100 rounded-lg">
+        <div className="flex items-center gap-2 text-neutral-500">
           <Loader2 className="h-5 w-5 animate-spin" />
           <span>Loading map...</span>
         </div>
@@ -126,7 +156,7 @@ export function MapView() {
   }
 
   return (
-    <div className="relative w-full h-full rounded-xl overflow-hidden">
+    <div className="relative w-full h-full rounded-lg overflow-hidden border border-neutral-200">
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         center={destinationLat && destinationLng ? { lat: destinationLat, lng: destinationLng } : center}
@@ -144,13 +174,13 @@ export function MapView() {
         {destinationLat && destinationLng && (
           <CircleF
             center={{ lat: destinationLat, lng: destinationLng }}
-            radius={radiusMiles * 1609.34} // Convert miles to meters
+            radius={radiusMiles * 1609.34}
             options={{
-              fillColor: "#10b981",
-              fillOpacity: 0.08,
-              strokeColor: "#10b981",
-              strokeOpacity: 0.3,
-              strokeWeight: 2,
+              fillColor: "#525252",
+              fillOpacity: 0.06,
+              strokeColor: "#525252",
+              strokeOpacity: 0.25,
+              strokeWeight: 1.5,
             }}
           />
         )}
@@ -161,11 +191,11 @@ export function MapView() {
             position={{ lat: destinationLat, lng: destinationLng }}
             icon={{
               path: google.maps.SymbolPath.CIRCLE,
-              scale: 12,
-              fillColor: "#059669",
+              scale: 10,
+              fillColor: "#171717",
               fillOpacity: 1,
               strokeColor: "#ffffff",
-              strokeWeight: 3,
+              strokeWeight: 2,
             }}
             zIndex={1000}
             title="Your destination"
@@ -200,20 +230,20 @@ export function MapView() {
               pixelOffset: new google.maps.Size(0, -30),
             }}
           >
-            <div className="p-2 min-w-[200px]">
-              <h4 className="font-semibold text-slate-900 mb-1">
+            <div className="p-2 min-w-[180px]">
+              <h4 className="font-semibold text-neutral-900 mb-1">
                 {formatCurrency(selectedListing.price)}/mo
               </h4>
-              <p className="text-sm text-slate-600 mb-2">
+              <p className="text-sm text-neutral-600 mb-2">
                 {selectedListing.bedrooms} bed • {selectedListing.bathrooms} bath
                 {selectedListing.sqft && ` • ${selectedListing.sqft} sqft`}
               </p>
               {selectedListing.avgCommuteMin !== null && (
-                <p className="text-sm font-medium text-emerald-600">
-                  ~{formatDuration(selectedListing.avgCommuteMin)} avg commute
+                <p className="text-sm font-medium text-neutral-700">
+                  ~{formatDuration(selectedListing.avgCommuteMin)} commute
                 </p>
               )}
-              <p className="text-xs text-slate-500 mt-1 truncate">
+              <p className="text-xs text-neutral-500 mt-1 truncate">
                 {selectedListing.address}
               </p>
             </div>
@@ -222,8 +252,12 @@ export function MapView() {
       </GoogleMap>
 
       {/* Map controls overlay */}
-      <MapControls map={map} bounds={bounds} />
+      <MapControls 
+        map={map} 
+        bounds={bounds} 
+        mapType={mapType}
+        onToggleMapType={toggleMapType}
+      />
     </div>
   );
 }
-

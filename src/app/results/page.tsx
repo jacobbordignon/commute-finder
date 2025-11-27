@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LocationInput } from "@/components/search/LocationInput";
 import { FilterPanel } from "@/components/search/FilterPanel";
@@ -18,8 +18,8 @@ const MapView = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-full flex items-center justify-center bg-slate-100 rounded-xl">
-        <div className="flex items-center gap-2 text-slate-600">
+      <div className="w-full h-full flex items-center justify-center bg-neutral-100 rounded-lg">
+        <div className="flex items-center gap-2 text-neutral-500">
           <Loader2 className="h-5 w-5 animate-spin" />
           <span>Loading map...</span>
         </div>
@@ -49,33 +49,34 @@ export default function ResultsPage() {
   // Show loading state until mounted
   if (!mounted) {
     return (
-      <div className="h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+      <div className="h-screen flex items-center justify-center bg-neutral-50">
+        <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50">
+    <div className="h-screen flex flex-col bg-neutral-50">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-4 py-3">
+      <header className="bg-white border-b border-neutral-200 px-4 py-3">
         <div className="max-w-screen-2xl mx-auto flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.push("/")}
-            className="flex-shrink-0"
+            className="flex-shrink-0 hover:bg-neutral-100"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
 
-          <div className="flex-1 max-w-2xl">
+          <div className="flex-1 max-w-xl">
             <LocationInput />
           </div>
 
           {destinationAddress && (
-            <div className="hidden lg:block text-sm text-slate-500">
-              Searching near <span className="font-medium text-slate-700">{destinationAddress}</span>
+            <div className="hidden lg:flex items-center gap-2 text-sm text-neutral-500">
+              <MapPin className="h-4 w-4" />
+              <span className="truncate max-w-xs">{destinationAddress}</span>
             </div>
           )}
         </div>
@@ -84,9 +85,9 @@ export default function ResultsPage() {
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left sidebar - Filters and listings */}
-        <div className="w-full md:w-[400px] lg:w-[450px] flex flex-col bg-white border-r border-slate-200">
+        <div className="w-full md:w-[380px] lg:w-[420px] flex flex-col bg-white border-r border-neutral-200">
           {/* Filters */}
-          <div className="p-4 space-y-4 border-b border-slate-100">
+          <div className="p-4 space-y-4 border-b border-neutral-100">
             <TimeSelector />
             <FilterPanel />
           </div>
@@ -98,11 +99,10 @@ export default function ResultsPage() {
         </div>
 
         {/* Map */}
-        <div className="hidden md:block flex-1 p-4">
+        <div className="hidden md:block flex-1 p-3">
           <MapView />
         </div>
       </div>
     </div>
   );
 }
-

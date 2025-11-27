@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Sun, Moon } from "lucide-react";
+import { Clock, ArrowRight } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useSearchStore } from "@/store/searchStore";
 import { cn } from "@/lib/utils";
@@ -28,26 +28,23 @@ export function TimeSelector() {
   } = useSearchStore();
 
   return (
-    <div className="bg-white rounded-xl border-2 border-slate-100 shadow-sm p-4">
+    <div className="bg-white rounded-lg border border-neutral-200 p-4">
       <div className="flex items-center gap-2 mb-4">
-        <Clock className="h-5 w-5 text-emerald-600" />
-        <h3 className="font-medium text-slate-900">Commute Times</h3>
+        <Clock className="h-4 w-4 text-neutral-500" />
+        <h3 className="font-medium text-neutral-700 text-sm">Commute Times</h3>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="flex items-center gap-3">
         {/* Departure Time */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Sun className="h-4 w-4 text-amber-500" />
-            <Label className="text-sm">Leave Home</Label>
-          </div>
+        <div className="flex-1">
+          <Label className="text-xs text-neutral-500 mb-1.5 block">Depart</Label>
           <select
             value={departureTime}
             onChange={(e) => setDepartureTime(e.target.value)}
             className={cn(
-              "w-full h-10 rounded-lg border-2 border-slate-200 bg-white px-3 text-sm",
-              "shadow-sm transition-all duration-200 focus:border-emerald-500",
-              "focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              "w-full h-9 rounded-md border border-neutral-200 bg-neutral-50 px-3 text-sm",
+              "transition-colors focus:border-neutral-400 focus:bg-white",
+              "focus:outline-none"
             )}
           >
             {TIME_OPTIONS.filter((t) => {
@@ -59,24 +56,20 @@ export function TimeSelector() {
               </option>
             ))}
           </select>
-          <p className="text-xs text-slate-500 mt-1">
-            When you leave for class
-          </p>
         </div>
 
+        <ArrowRight className="h-4 w-4 text-neutral-300 mt-5" />
+
         {/* Return Time */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Moon className="h-4 w-4 text-indigo-500" />
-            <Label className="text-sm">Leave School</Label>
-          </div>
+        <div className="flex-1">
+          <Label className="text-xs text-neutral-500 mb-1.5 block">Return</Label>
           <select
             value={returnTime}
             onChange={(e) => setReturnTime(e.target.value)}
             className={cn(
-              "w-full h-10 rounded-lg border-2 border-slate-200 bg-white px-3 text-sm",
-              "shadow-sm transition-all duration-200 focus:border-emerald-500",
-              "focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              "w-full h-9 rounded-md border border-neutral-200 bg-neutral-50 px-3 text-sm",
+              "transition-colors focus:border-neutral-400 focus:bg-white",
+              "focus:outline-none"
             )}
           >
             {TIME_OPTIONS.filter((t) => {
@@ -88,16 +81,8 @@ export function TimeSelector() {
               </option>
             ))}
           </select>
-          <p className="text-xs text-slate-500 mt-1">
-            When you head home
-          </p>
         </div>
       </div>
-
-      <p className="text-xs text-slate-400 mt-4 text-center">
-        Times are used to estimate real traffic conditions
-      </p>
     </div>
   );
 }
-
