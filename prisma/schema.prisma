@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+model Listing {
+  id           String   @id @default(cuid())
+  externalId   String   @unique // RentCast listing ID
+  address      String
+  city         String
+  state        String
+  zipCode      String
+  latitude     Float
+  longitude    Float
+  price        Int // Monthly rent
+  bedrooms     Int
+  bathrooms    Float
+  sqft         Int?
+  propertyType String // apartment, house, condo, townhouse, etc.
+  imageUrl     String?
+  listingUrl   String
+  fetchedAt    DateTime @default(now())
+
+  // Cached commute data (per destination)
+  commutes CommuteCache[]
+
+  @@index([latitude, longitude])
+  @@index([city, state])
+  @@index([price])
+}
+
+model CommuteCache {
+  id             String   @id @default(cuid())
+  listingId      String
+  listing        Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  destinationLat Float
+  destinationLng Float
+  departureTime  String // "08:00"
+  returnTime     String // "17:00"
+  commuteToMin   Int // Minutes to destination
+  commuteFromMin Int // Minutes from destination  
+  avgCommuteMin  Int // Average of both
+  calculatedAt   DateTime @default(now())
+
+  @@unique([listingId, destinationLat, destinationLng, departureTime, returnTime])
+  @@index([destinationLat, destinationLng])
+}
+
+model SearchHistory {
+  id                 String   @id @default(cuid())
+  destinationAddress String
+  destinationLat     Float
+  destinationLng     Float
+  radiusMiles        Float
+  createdAt          DateTime @default(now())
+
+  @@index([createdAt])
+}
+
